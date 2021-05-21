@@ -1,43 +1,32 @@
 var express = require('express');
 var router = express.Router();
-const {Sequelize, DataTypes} = require('sequelize');
-const {config} = require('../config');
-const sequelize = new Sequelize(config.databases, config.username, config.password, {
-    host: config.host,
-    dialect: 'mysql',
-    port:config.port,
-    pool: {
-        max: 5,
-        min: 0,
-        idle: 30000
-    }
-})
-const ReviewsRule = sequelize.define('ReviewsRule', {
-    Fauto_id: {
-        type: DataTypes.BIGINT,
-        primaryKey: true
-    },
-    Fhospital_id: DataTypes.BIGINT,
-    Fclass: DataTypes.STRING,
-    Fclass_sub: DataTypes.STRING,
-    Fcontent: DataTypes.STRING
-}, {
-    tableName: 't_reviews_rule',
-    timestamps:false
-})
-// (async function() {
-//     const reviewsRules = await ReviewsRule.findAll();
-//     console.log(reviewsRules);
-// })();
-ReviewsRule.findAll().then(res=>{
-    console.log(res);
-});
-console.log('异步');
+const {ReviewsRule} = require('../model/ReviewsRule.js')
+const {ReviewsRuleItem} = require('../model/ReviewsRuleItem.js')
+
 /* GET home page. */
-router.get('/', function (req, res, next) {
-    // res.render('index', { title: 'Express' });
+router.get('/ruleList', async function (req, res, next) {
+    const reviewsRules = await ReviewsRule.findAll();
+    res.send(reviewsRules);
+});
+router.get('/ruleListItem', async function (req, res, next) {
+    const reviewsRulesItem = await ReviewsRuleItem.findAll();
+    res.send(reviewsRulesItem);
+});
 
-
+router.get('/rule/:id', async function (req, res, next) {
+    const id = req.params.id;
+    const ruleItem = await ReviewsRuleItem.findOne({
+        where:{
+            'Frule_id':id
+        },
+        attributes:[
+            'Fauto_id',
+            'Frule_id',
+            'Freduce_score'
+        ]
+    });
+    //const reviewsRulesItem = await ReviewsRuleItem.findAll();
+    res.send(ruleItem);
 });
 
 module.exports = router;
